@@ -39,6 +39,7 @@ void playnote (uint8_t a)
 {
 	OCR0A=a;
 	OCR0B=a/2;
+    //OCR0B=a;
 }
 
 void dontplay ()
@@ -71,7 +72,9 @@ int adc_read ()
 int main(void)
 {
 	bit_set(DDRB, BIT(3));
+    bit_set(DDRB, BIT(2));
 	bit_clear(PORTB, BIT(3));
+	bit_clear(PORTB, BIT(2));
 	pwm_init();
 	adc_init();
 	while(1)
@@ -80,12 +83,22 @@ int main(void)
 		if (reading < 128)
 		{
 			bit_clear(PORTB, BIT(3));
+			bit_clear(PORTB, BIT(2));
 			dontplay();
 		}
 		else
 		{
 			bit_set(PORTB, BIT(3));
-			if ((reading <= 359))
+            if ((reading <= 340))
+			{
+				bit_set(PORTB, BIT(2));
+                bit_clear(PORTB, BIT(3));
+			}
+            else if ((reading <= 352))
+			{
+				bit_set(PORTB, BIT(2));
+			}
+			else if ((reading <= 359))
 			{
 				playnote(A1);
 			}
