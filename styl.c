@@ -24,6 +24,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <avr/eeprom.h>
 
 #define bit_get(p,m) ((p) & (m))
 #define bit_set(p,m) ((p) |= (m))
@@ -74,29 +75,77 @@ int main(void)
 	bit_set(DDRB, BIT(3));
     bit_set(DDRB, BIT(2));
 	bit_clear(PORTB, BIT(3));
-	bit_clear(PORTB, BIT(2));
+	bit_set(PORTB, BIT(2));
 	pwm_init();
 	adc_init();
+    int recording;
+    int saved;
+    int playing;
+    int reading;
+    int noteSlot = 0;
 	while(1)
 	{
-		int reading = adc_read();
+        if(playing)
+        {
+            // GET NOTE
+            reading = eeprom_read_byte ((uint8_t*)noteSlot);
+        }
+        else
+        {
+            // READ ADC
+            reading = adc_read();
+        }
+
+
 		if (reading < 128)
 		{
 			bit_clear(PORTB, BIT(3));
-			bit_clear(PORTB, BIT(2));
+			//bit_clear(PORTB, BIT(2));
 			dontplay();
+            saved = 0;
 		}
 		else
 		{
+            if(recording && !saved)
+            {
+                // RECORD NOTE
+                eeprom_write_byte ((uint8_t *)noteSlot, (uint8_t)reading);
+                noteSlot++;
+                if(noteSlot>60)
+                {
+                    recording = 0;
+                    noteSlot = 0;
+                    bit_flip(PORTB, BIT(2));
+                }
+                else
+                {
+                    saved = 1;
+                }
+            }
+            
+            
 			bit_set(PORTB, BIT(3));
-            if ((reading <= 340))
+            if ((reading <= 302)) // RECORD
 			{
-				bit_set(PORTB, BIT(2));
-                bit_clear(PORTB, BIT(3));
+                // DEBOUNCE
+                _delay_ms(50);
+                if(adc_read()==reading)
+                {
+                    // Debounce ok, toggle recording mode
+                    recording = !recording;
+                    noteSlot = 0;
+                    bit_flip(PORTB, BIT(2));
+
+                    while(adc_read()>128){}
+                }
 			}
-            else if ((reading <= 352))
+            else if ((reading <= 335)) // PLAY
 			{
-				bit_set(PORTB, BIT(2));
+                    // Debounce ok, toggle recording mode
+                    //playing = 1;
+                    //noteSlot = 0;
+
+                    //while(adc_read()>128){}
 			}
 			else if ((reading <= 359))
 			{
@@ -179,7 +228,25 @@ int main(void)
 				playnote(E2);
 			}
 		}
-		_delay_us(255);
+
+        if(playing)
+        {
+            // wait for time
+            _delay_ms(1000);
+            dontplay();
+            _delay_ms(200);
+            noteSlot++;
+            if(noteSlot>60)
+            {
+                noteSlot = 0;
+                playing = 0;
+            }
+        }
+        else
+        {
+            // loop quickly
+		    _delay_us(255);
+        }
 	}
 }
 
