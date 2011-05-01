@@ -125,7 +125,7 @@ int main(void)
             
             
 			bit_set(PORTB, BIT(3));
-            if ((reading <= 302)) // RECORD
+            if ((reading <= 310)) // RECORD
 			{
                 // DEBOUNCE
                 _delay_ms(50);
@@ -139,13 +139,19 @@ int main(void)
                     while(adc_read()>128){}
                 }
 			}
-            else if ((reading <= 335)) // PLAY
+            else if ((reading <= 345)) // PLAY
 			{
-                    // Debounce ok, toggle recording mode
-                    //playing = 1;
-                    //noteSlot = 0;
-
-                    //while(adc_read()>128){}
+                if(!recording){
+                    _delay_ms(10);
+                    if(adc_read()==reading)
+                    {
+                        // Debounce ok, start playing
+                        playing = 1;
+                        noteSlot = 0;
+                        bit_clear(PORTB, BIT(2));
+                    }
+                        while(adc_read()>128){}
+                }
 			}
 			else if ((reading <= 359))
 			{
@@ -232,7 +238,7 @@ int main(void)
         if(playing)
         {
             // wait for time
-            _delay_ms(1000);
+            _delay_ms(200);
             dontplay();
             _delay_ms(200);
             noteSlot++;
@@ -240,6 +246,7 @@ int main(void)
             {
                 noteSlot = 0;
                 playing = 0;
+                bit_set(PORTB, BIT(2));
             }
         }
         else
