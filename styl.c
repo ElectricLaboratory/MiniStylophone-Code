@@ -1,6 +1,7 @@
 /*
  * styl - Nano Stylophone for attiny13a
  * Copyright (C) 2011  Bob Clough <bob@clough.me>
+ * Copyright (C) 2011  Charles Yarnold <charlesyarnold@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
