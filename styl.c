@@ -90,6 +90,8 @@ int main(void)
         {
             // GET NOTE
             reading = eeprom_read_byte ((uint8_t*)noteSlot);
+            reading = reading * 4;
+            //reading = 900;
         }
         else
         {
@@ -103,14 +105,23 @@ int main(void)
 			bit_clear(PORTB, BIT(3));
 			//bit_clear(PORTB, BIT(2));
 			dontplay();
-            saved = 0;
+
+            if(recording){
+                _delay_ms(10);
+                if(adc_read()==reading)
+                {
+                    saved = 0;
+                }
+            }
 		}
 		else
 		{
             if(recording && !saved)
             {
                 // RECORD NOTE
+                reading = reading / 4;
                 eeprom_write_byte ((uint8_t *)noteSlot, (uint8_t)reading);
+
                 noteSlot++;
                 if(noteSlot>60)
                 {
@@ -134,17 +145,23 @@ int main(void)
                 {
                     // Debounce ok, toggle recording mode
                     recording = !recording;
+                    if(!recording)
+                    {
+                        noteSlot++;
+                        eeprom_write_byte ((uint8_t *)noteSlot, (uint8_t)0);
+                    }
                     noteSlot = 0;
                     bit_flip(PORTB, BIT(2));
 
                     while(adc_read()>128){}
                 }
 			}
-            else if ((reading <= 345)) // PLAY
+            else if ((reading <= 340)) // PLAY
 			{
                 if(!recording){
-                    _delay_ms(10);
-                    if(adc_read()==reading)
+                    _delay_ms(2);
+                    int secondRead = adc_read();
+                    if(secondRead==reading || secondRead==reading+1 || secondRead==reading-1 || secondRead==reading+2 || secondRead==reading-2)
                     {
                         // Debounce ok, start playing
                         playing = 1;
@@ -243,7 +260,7 @@ int main(void)
             dontplay();
             _delay_ms(200);
             noteSlot++;
-            if(noteSlot>60)
+            if(noteSlot>60 || reading==0)
             {
                 noteSlot = 0;
                 playing = 0;
