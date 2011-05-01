@@ -28,7 +28,7 @@ PART=attiny13a
 
 # Change this secton to change AVRDUDE settings
 AVRDUDE_PART=t13
-AVRDUDE_PROG=stk500v2
+AVRDUDE_PROG=usbtiny
 AVRDUDE_PORT=/dev/ttyUSB0
 
 # Set the default action to be compiling everything, then writing the chip
