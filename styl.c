@@ -119,8 +119,8 @@ int main(void)
             if(recording && !saved)
             {
                 // RECORD NOTE
-                reading = reading / 4;
-                eeprom_write_byte ((uint8_t *)noteSlot, (uint8_t)reading);
+                int readingLess = reading / 4;
+                eeprom_write_byte ((uint8_t *)noteSlot, (uint8_t)readingLess);
 
                 noteSlot++;
                 if(noteSlot>60)
@@ -175,7 +175,7 @@ int main(void)
 			{
 				playnote(A1);
 			}
-			else if (reading <= 372)
+			else if (reading <= 374)
 			{
 				playnote(AS1);
 			}
