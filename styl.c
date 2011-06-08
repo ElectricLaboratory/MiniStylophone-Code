@@ -79,7 +79,7 @@ int main(void)
 	bit_set(PORTB, BIT(2));
 	pwm_init();
 	adc_init();
-    int recording;
+    int recording = 0;
     int saved;
     int playing;
     int reading;
@@ -107,6 +107,7 @@ int main(void)
 			dontplay();
 
             if(recording){
+                bit_clear(PORTB, BIT(2));
                 _delay_ms(10);
                 if(adc_read()==reading)
                 {
@@ -137,6 +138,7 @@ int main(void)
             
             
 			bit_set(PORTB, BIT(3));
+            if(recording) bit_set(PORTB, BIT(2));
             if ((reading <= 310)) // RECORD
 			{
                 // DEBOUNCE
@@ -151,7 +153,7 @@ int main(void)
                         eeprom_write_byte ((uint8_t *)noteSlot, (uint8_t)0);
                     }
                     noteSlot = 0;
-                    bit_flip(PORTB, BIT(2));
+                    //bit_flip(PORTB, BIT(2));
 
                     while(adc_read()>128){}
                 }
@@ -175,7 +177,7 @@ int main(void)
 			{
 				playnote(A1);
 			}
-			else if (reading <= 374)
+			else if (reading <= 380)
 			{
 				playnote(AS1);
 			}
