@@ -48,7 +48,6 @@ $(PROGNAME).hex: $(PROGNAME)-stripped
 
 # Program the chip, using avrdude and the variables set above
 program: $(PROGNAME).hex
-#        $(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U lfuse:w:0x7a:m -U hfuse:w:0xff:m
 	$(AVRDUDE) -p $(AVRDUDE_PART) -c $(AVRDUDE_PROG) -P $(AVRDUDE_PORT) -U flash:w:$(PROGNAME).hex 
 
 fuses:	
