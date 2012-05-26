@@ -1,7 +1,7 @@
 /*
  * styl - Nano Stylophone for attiny13a
  * Copyright (C) 2011  Bob Clough <bob@clough.me>
- * Copyright (C) 2011  Charles Yarnold <charlesyarnold@gmail.com>
+ * Copyright (C) 2012  Charles Yarnold <charlesyarnold@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,53 +39,53 @@
 
 void playnote (uint8_t a)
 {
-	OCR0A=a;
-	OCR0B=a/2;
+    OCR0A=a;
+    OCR0B=a/2;
     //OCR0B=a;
 }
 
 void dontplay ()
 {
-	playnote(0);
+    playnote(0);
 }
 
 void pwm_init (void)
 {
-	DDRB |= BIT(1);
-	TCCR0A = BIT(COM0B1);   // Clear OC0A on Compare Match
-	TCCR0A |= BIT(WGM00);   // PWM mode, 8 bit 
-	TCCR0B = BIT(WGM02);	// TOP = OCRA
-	TCCR0B |= BIT(CS01) | BIT(CS00); // 64x prescaler
+    DDRB |= BIT(1);
+    TCCR0A = BIT(COM0B1);   // Clear OC0A on Compare Match
+    TCCR0A |= BIT(WGM00);   // PWM mode, 8 bit 
+    TCCR0B = BIT(WGM02);	// TOP = OCRA
+    TCCR0B |= BIT(CS01) | BIT(CS00); // 64x prescaler
 }
 
 void adc_init (void)
 {
-	ADMUX  = BIT(MUX1);
-	ADCSRA = BIT(ADEN);
+    ADMUX  = BIT(MUX1);
+    ADCSRA = BIT(ADEN);
 }
 
 int adc_read ()
 {
-      ADCSRA |= BIT(ADSC);
-      while(bit_get(ADCSRA, BIT(ADSC)) !=0){};
-      return ADC; 
+    ADCSRA |= BIT(ADSC);
+    while(bit_get(ADCSRA, BIT(ADSC)) !=0){};
+    return ADC; 
 }
 
 int main(void)
 {
-	bit_set(DDRB, BIT(3));
+    bit_set(DDRB, BIT(3));
     bit_set(DDRB, BIT(2));
-	bit_clear(PORTB, BIT(3));
-	bit_set(PORTB, BIT(2));
-	pwm_init();
-	adc_init();
+    bit_clear(PORTB, BIT(3));
+    bit_set(PORTB, BIT(2));
+    pwm_init();
+    adc_init();
     int recording = 0;
     int saved;
-    int playing;
+    int playing = 0;
     int reading;
     int noteSlot = 0;
-	while(1)
-	{
+    while(1)
+    {
         if(playing)
         {
             // GET NOTE
@@ -100,11 +100,11 @@ int main(void)
         }
 
 
-		if (reading < 128)
-		{
-			bit_clear(PORTB, BIT(3));
-			//bit_clear(PORTB, BIT(2));
-			dontplay();
+        if (reading < 128)
+        {
+            bit_clear(PORTB, BIT(3));
+            //bit_clear(PORTB, BIT(2));
+            dontplay();
 
             if(recording){
                 bit_clear(PORTB, BIT(2));
@@ -134,13 +134,13 @@ int main(void)
                 {
                     saved = 1;
                 }
-            }
+           }
             
             
-			bit_set(PORTB, BIT(3));
+            bit_set(PORTB, BIT(3));
             if(recording) bit_set(PORTB, BIT(2));
             if ((reading <= 310)) // RECORD
-			{
+            {
                 // DEBOUNCE
                 _delay_ms(50);
                 if(adc_read()==reading)
@@ -157,9 +157,9 @@ int main(void)
 
                     while(adc_read()>128){}
                 }
-			}
+            }
             else if ((reading <= 340)) // PLAY
-			{
+            {
                 if(!recording){
                     _delay_ms(2);
                     int secondRead = adc_read();
@@ -170,90 +170,90 @@ int main(void)
                         noteSlot = 0;
                         bit_clear(PORTB, BIT(2));
                     }
-                        while(adc_read()>128){}
+                    while(adc_read()>128){}
                 }
-			}
-			else if ((reading <= 359))
-			{
-				playnote(A1);
-			}
-			else if (reading <= 380)
-			{
-				playnote(AS1);
-			}
-			else if (reading <= 387)
-			{
-				playnote(B1);
-			}
-			else if (reading <= 402)
-			{
-				playnote(C1);
-			}
-			else if (reading <= 418)
-			{
-				playnote(CS1);
-			}
-			else if (reading <= 436)
-			{
-				playnote(D1);
-			}
-			else if (reading <= 455)
-			{
-				playnote(DS1);
-			}
-			else if (reading <= 477)
-			{
-				playnote(E1);
-			}
-			else if (reading <= 500)
-			{
-				playnote(F1);
-			}
-			else if (reading <= 525)
-			{
-				playnote(FS1);
-			}
-			else if (reading <= 554)
-			{
-				playnote(G1);
-			}
-			else if (reading <= 586)
-			{
-				playnote(GS1);
-			}
-			else if (reading <= 621)
-			{
-				playnote(A2);
-			}
-			else if (reading <= 661)
-			{
-				playnote(AS2);
-			}
-			else if (reading <= 707)
-			{
-				playnote(B2);
-			}
-			else if (reading <= 760)
-			{
-				playnote(C2);
-			}
-			else if (reading <= 821)
-			{
-				playnote(CS2);
-			}
-			else if (reading <= 892)
-			{
-				playnote(D2);
-			}
-			else if (reading <= 977)
-			{
-				playnote(DS2);
-			}
-			else if (reading > 977)
-			{
-				playnote(E2);
-			}
-		}
+            }
+            else if ((reading <= 359))
+            {
+                playnote(A1);
+            }
+            else if (reading <= 380)
+            {
+                playnote(AS1);
+            }
+            else if (reading <= 387)
+            {
+                playnote(B1);
+            }
+            else if (reading <= 402)
+            {
+                playnote(C1);
+            }
+            else if (reading <= 418)
+            {
+                playnote(CS1);
+            }
+            else if (reading <= 436)
+            {
+                playnote(D1);
+            }
+            else if (reading <= 455)
+            {
+                playnote(DS1);
+            }
+            else if (reading <= 477)
+            {
+                playnote(E1);
+            }
+            else if (reading <= 500)
+            {
+                playnote(F1);
+            }
+            else if (reading <= 525)
+            {
+                playnote(FS1);
+            }
+            else if (reading <= 554)
+            {
+                playnote(G1);
+            }
+            else if (reading <= 586)
+            {
+                playnote(GS1);
+            }
+            else if (reading <= 621)
+            {
+                playnote(A2);
+            }
+            else if (reading <= 661)
+            {
+                playnote(AS2);
+            }
+            else if (reading <= 707)
+            {
+                playnote(B2);
+            }
+            else if (reading <= 760)
+            {
+                playnote(C2);
+            }
+            else if (reading <= 821)
+            {
+                playnote(CS2);
+            }
+            else if (reading <= 892)
+            {
+                playnote(D2);
+            }
+            else if (reading <= 977)
+            {
+                playnote(DS2);
+            }
+            else if (reading > 977)
+            {
+                playnote(E2);
+            }
+        }
 
         if(playing)
         {
@@ -272,8 +272,7 @@ int main(void)
         else
         {
             // loop quickly
-		    _delay_us(255);
+            _delay_us(255);
         }
-	}
+    }
 }
-
